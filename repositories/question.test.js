@@ -1,5 +1,6 @@
 const { writeFile, rm } = require('fs/promises')
 const { makeQuestionRepository } = require('./question')
+const { CustomException } = require('../exceptions/custom.exception')
 
 describe('question repository', () => {
   const TEST_QUESTIONS_FILE_PATH = 'test-questions.json'
@@ -143,10 +144,10 @@ describe('question repository', () => {
         author: expect.any(String)
       })
     })
-    it('incorrect question id - should return a null', async () => {
-      expect(
-        await questionRepo.getAnswer('incorrectId', answerId)
-      ).toStrictEqual(null)
+    it('incorrect question id - should throw a Custom Exception', async () => {
+      await expect(
+        async () => await questionRepo.getAnswer('incorrectId', answerId)
+      ).rejects.toThrow(CustomException)
     })
     it('not found - should return a null', async () => {
       const { id } = questionsMock[0]
@@ -160,6 +161,7 @@ describe('question repository', () => {
       summary: 'Some cleaver answer.',
       author: 'John Brown'
     }
+
     it('should return a proper response object', async () => {
       const responseObj = await questionRepo.addAnswer(
         questionId,
@@ -184,6 +186,12 @@ describe('question repository', () => {
     it('should extend an questions array with new answer attached no proper question', async () => {
       const targetQuestion = await questionRepo.getQuestionById(questionId)
       expect(targetQuestion.answers).toHaveLength(2)
+    })
+
+    it('incorrect question id - should throw a Custom Exception', async () => {
+      await expect(
+        async () => await questionRepo.addAnswer('incorrectId', answerDtoMock)
+      ).rejects.toThrow(CustomException)
     })
   })
 })
