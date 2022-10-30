@@ -1,5 +1,6 @@
 const { readFile, writeFile } = require('fs/promises')
 const uuid = require('uuid')
+const { CustomException } = require('../exceptions/custom.exception')
 
 const makeQuestionRepository = fileName => {
   const getQuestions = async () => {
@@ -29,7 +30,8 @@ const makeQuestionRepository = fileName => {
 
   const getAnswer = async (questionId, answerId) => {
     const targetedQuestion = findElementById(await loadQuestions(), questionId)
-    if (!targetedQuestion) return null
+    if (!targetedQuestion)
+      throw new CustomException('Provided id not match any question', 409)
     return findElementById(targetedQuestion.answers, answerId) ?? null
   }
 
@@ -37,10 +39,7 @@ const makeQuestionRepository = fileName => {
     const questions = await loadQuestions()
     const targetedQuestion = findElementById(questions, questionId)
     if (!targetedQuestion)
-      return {
-        updatedQuestionId: 'not found',
-        createdAnswerId: ''
-      }
+      throw new CustomException('Provided id not match any question', 409)
     const newAnswer = { ...answer, id: uuid.v4() }
     targetedQuestion.answers.push(newAnswer)
     const questionsUpdated = [
